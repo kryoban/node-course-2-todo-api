@@ -12,6 +12,10 @@ var app = express();
 
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+    res.send({message: 'Welcome!'})
+})
+
 app.post('/todos', (req, res) => {
     var todo = new Todo({
         text: req.body.text
@@ -42,7 +46,7 @@ app.get('/todos/:id', (req, res) => {
         if (!todo) {
             return res.status(404).send({error: 'Todo not found'});
         }
-        res.send(JSON.stringify(todo, undefined, 2));
+        res.send({todo});
     }).catch((e) => {
         res.status(400).send();
     })
