@@ -5,8 +5,8 @@ var {ObjectID} = require('mongodb');
 var port = process.env.PORT || 3000;
 
 var {mongoose} = require('./db/mongoose');
-var {Todo} = require('./models/todo')
-var {User} = require('./models/user')
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
 var app = express();
 
@@ -29,8 +29,8 @@ app.post('/todos', (req, res) => {
 })
 
 app.get('/todos', (req, res) => {
-    Todo.find().then((doc) => {
-        res.send({todos: doc})
+    Todo.find().then((todos) => {
+        res.send({todos})
     }, (e) => {
         res.status(400).send(e);
     })
@@ -61,7 +61,7 @@ app.delete('/todos/:id', (req, res) => {
             if (!todo) {
                 return res.status(404).send({error: 'Todo not found'})
             }
-            return res.send(todo);
+            return res.send({todo});
         }).catch((e) => {
             return res.status(400).send({error: e});
         })

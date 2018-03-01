@@ -34,7 +34,6 @@ describe('POST /todos', () => {
                 if (err) {
                     return done(err);
                 }
-
                 Todo.find({text}).then((todos) => {
                     expect(todos.length).toBe(1);
                     expect(todos[0].text).toBe(text);
@@ -81,13 +80,23 @@ describe('GET /todos', () => {
 
 describe('GET /todos/:id', () => {
     it('should return todo doc', (done) => {
+        const id = todos[0]._id;
+
         request(app)
-            .get(`/todos/${todos[0]._id}`)
+            .get(`/todos/${id}`)
             .expect(200)
             .expect((res) => {
                 expect(res.body.todo.text).toBe(todos[0].text);
             })
-            .end(done);
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                Todo.findById(id).then((todo) => {
+                    expect(todo._id).toEqual(id);
+                    done();
+                }).catch(err => done(err))
+            });
     });
 
     it('should return 400 and invalid id message', (done) => {
@@ -110,3 +119,49 @@ describe('GET /todos/:id', () => {
             .end(done);
     })
 });
+
+describe('DELETE /todos/:id', () => {
+    it('should delete a todo', (done) => {
+        request(app)
+            .delete(`/todos/${todos[0]._id}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toEqual(todos[0]._id);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                Todo.findById(todos[0]._id).then((todo) => {
+                    expect(todo).toNotExist();
+                    done();
+                }).catch((e) => done(e));
+            }
+                
+            );
+    });
+
+    it('should return 400 and invalid todo id message', (done) => {
+        request(app)
+            .delete(`/todos/${todos[0]._id + '123'}`)
+            .expect(400)
+            .expect((res) => {
+                expect(res.body.error).toBe('Todo ID is invalid')
+            })
+            .end(done);
+    })
+
+    it('should return 404 and todo not found message', (done) => {
+        let id = new ObjectID();
+
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.body.error).toBe('Todo not found')
+            })
+            .end(done);
+    })
+})
+
