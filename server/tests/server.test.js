@@ -100,7 +100,7 @@ describe('GET /todos/:id', () => {
             .end(done);
     })
 
-    it('should return 404 and empty object', (done) => {
+    it('should return 404 and not found message', (done) => {
         request(app)
             .get(`/todos/${new ObjectID()}`)
             .expect(404)
