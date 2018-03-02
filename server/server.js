@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
     res.send({message: 'Welcome!'})
 })
 
+//////// TODOS ////////
 app.post('/todos', (req, res) => {
     var todo = new Todo({
         text: req.body.text
@@ -90,6 +91,18 @@ app.patch('/todos/:id', (req, res) => {
         res.send({todo});
     }).catch((err) => {
         res.status(400).send();
+    })
+})
+
+//////// USERS ////////
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+
+    user.save().then((user) => {
+        res.send(user)
+    }).catch((e) => {
+        res.status(400).send(e);
     })
 })
     
