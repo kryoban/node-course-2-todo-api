@@ -15,14 +15,13 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-    res.send({message: 'Welcome!'})
+    res.send({message: 'Welcome!'});
 })
 
 //////// TODOS ////////
 app.post('/todos', (req, res) => {
-    var todo = new Todo({
-        text: req.body.text
-    })
+    var body = _.pick(req.body, ['text', 'completed']);
+    var todo = new Todo(body);
 
     todo.save().then((doc) => {
         res.send(doc);
@@ -33,7 +32,7 @@ app.post('/todos', (req, res) => {
 
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
-        res.send({todos})
+        res.send({todos});
     }, (e) => {
         res.status(400).send(e);
     })
@@ -58,11 +57,11 @@ app.get('/todos/:id', (req, res) => {
 app.delete('/todos/:id', (req, res) => {
     var id = req.params.id;
     if (!ObjectID.isValid(id)) {
-        return res.status(400).send({error: 'Todo ID is invalid'})
+        return res.status(400).send({error: 'Todo ID is invalid'});
     } 
     Todo.findByIdAndRemove(id).then((todo) => {
         if (!todo) {
-            return res.status(404).send({error: 'Todo not found'})
+            return res.status(404).send({error: 'Todo not found'});
         }
         return res.send({todo});
     }).catch((e) => {
@@ -100,7 +99,7 @@ app.post('/users', (req, res) => {
     var user = new User(body);
 
     user.save().then((user) => {
-        res.send(user)
+        res.send(user);
     }).catch((e) => {
         res.status(400).send(e);
     })
