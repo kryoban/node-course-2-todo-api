@@ -1,25 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
 
-const {app} = require('./../server');
-const {Todo} = require('./../models/todo');
+const { app } = require('./../server');
+const { Todo } = require('./../models/todo');
+const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 
-const todos = [{
-    _id: new ObjectID(),
-    text: 'First todo'
-}, {
-    _id: new ObjectID(),
-    text: 'Second todo',
-    completed: true,
-    completedAt: 333
-}]
-
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
-    }).then(() => done());
-})
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
     it('should create a new todo', (done) => {
@@ -27,7 +15,7 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
-            .send({text})
+            .send({ text })
             .expect(200)
             .expect((res) => {
                 expect(res.body.text).toBe(text);
@@ -36,7 +24,7 @@ describe('POST /todos', () => {
                 if (err) {
                     return done(err);
                 }
-                Todo.find({text}).then((todos) => {
+                Todo.find({ text }).then((todos) => {
                     expect(todos.length).toBe(1);
                     expect(todos[0].text).toBe(text);
                     done();
@@ -49,7 +37,7 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
-            .send({text})
+            .send({ text })
             .expect(400)
             .end((err, res) => {
                 if (err) {
@@ -140,7 +128,7 @@ describe('DELETE /todos/:id', () => {
                     done();
                 }).catch((e) => done(e));
             }
-                
+
             );
     });
 
@@ -169,7 +157,7 @@ describe('DELETE /todos/:id', () => {
 
 describe('PATCH /todos/:id', () => {
     it('should update a todo doc', (done) => {
-        var body = {text: 'Updated todo', completed: true}
+        var body = { text: 'Updated todo', completed: true }
         request(app)
             .patch(`/todos/${todos[0]._id}`)
             .send(body)
@@ -183,7 +171,7 @@ describe('PATCH /todos/:id', () => {
                 if (err) {
                     return done(err);
                 }
-                Todo.findByIdAndUpdate(todos[0]._id, {$set:body}, {new: true}).then((todo) => {
+                Todo.findByIdAndUpdate(todos[0]._id, { $set: body }, { new: true }).then((todo) => {
                     expect(todo.text).toBe(body.text);
                     expect(todo.completed).toBeTruthy();
                     done();
@@ -192,7 +180,7 @@ describe('PATCH /todos/:id', () => {
     })
 
     it('should clear completedAt when todo is not completed', (done) => {
-        var body = {completed: false}
+        var body = { completed: false }
         request(app)
             .patch(`/todos/${todos[1]._id}`)
             .send(body)
@@ -204,7 +192,7 @@ describe('PATCH /todos/:id', () => {
                 if (err) {
                     return done(err);
                 }
-                Todo.findByIdAndUpdate(todos[1]._id, {$set:body}, {new: true}).then((todo) => {
+                Todo.findByIdAndUpdate(todos[1]._id, { $set: body }, { new: true }).then((todo) => {
                     expect(todo.completed).toBeFalsy();
                     expect(todo.completedAt).toNotExist();
                     done();
