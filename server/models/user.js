@@ -33,13 +33,17 @@ var UserSchema = new mongoose.Schema({
     }]
 })
 
+// aka instance methods, sunt metode care se aplica fiecarei instante a schemei User
 UserSchema.methods = {
+    // se suprascrie pentru a returna doar id-ul si mail-ul userului
+    // by default returneaza tot documentul (cu tot cu parola, not cool)
     toJSON: function () {
         var user = this;
         var userObject = user.toObject();
 
         return _.pick(userObject, ['_id', 'email']);
     },
+    // genereaza un token pentru instanta curenta de User
     generateAuthToken: function () {
         var user = this;
         var access = 'auth';
@@ -53,7 +57,9 @@ UserSchema.methods = {
     }
 }
 
+// aka static methods, sunt metode care se aplica direct modelului
 UserSchema.statics = {
+    // la nivelul modelului User se cauta instanta care contine un anume token
     findByToken: function (token) {
         var User = this;
         var decoded;
@@ -61,7 +67,7 @@ UserSchema.statics = {
         try {
             decoded = jwt.verify(token, 'abc123');
         } catch (e) {
-            return Promise.reject();
+            return Promise.reject(e);
         }
 
         return User.findOne({
@@ -72,6 +78,7 @@ UserSchema.statics = {
     }
 }
 
+// se ruleaza inainte de user.save(), se face hashing si salt pentru password
 UserSchema.pre('save', function (next) {
     var user = this;
 
@@ -90,18 +97,6 @@ UserSchema.pre('save', function (next) {
         next();
     }
 });
-
-// UserSchema.methods.generateAuthToken = function () {
-//     var user = this;
-//     var access = 'auth';
-//     var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
-
-//     user.tokens = user.tokens.concat([{ access, token }]);
-
-//     return user.save().then(() => {
-//         return token
-//     })
-// }
 
 var User = mongoose.model('User', UserSchema);
 
