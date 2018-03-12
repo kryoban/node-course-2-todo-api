@@ -293,7 +293,7 @@ describe('POST /users/login', () => {
 
         request(app)
             .post('/users/login')
-            .send({email, password})
+            .send({ email, password })
             .expect(200)
             .expect((res) => {
                 expect(res.headers['x-auth']).toExist();
@@ -322,7 +322,7 @@ describe('POST /users/login', () => {
 
         request(app)
             .post('/users/login')
-            .send({email, password})
+            .send({ email, password })
             .expect(401)
             .expect((res) => {
                 expect(res.headers['x-auth']).toNotExist();
@@ -335,7 +335,7 @@ describe('POST /users/login', () => {
                 User.findById(users[0]._id).then((user) => {
                     // toBe(1) instead of 0 because the token he got at registration / 
                     // last login hasn't been replaced with a new one
-                    expect(user.tokens.length).toBe(1); 
+                    expect(user.tokens.length).toBe(1);
                     done();
                 }).catch((e) => {
                     return done(e);
@@ -343,3 +343,30 @@ describe('POST /users/login', () => {
             });
     })
 });
+
+describe('DELETE /users/me/token', () => {
+    it('should remove auth token on logout', (done) => {
+        var user = users[0];
+        var token = users[0].tokens[0].token;
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth', token)
+            .send({ user, token })
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toNotExist();
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                User.findById(users[0]._id).then((user) => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch((e) => {
+                    return done(e);
+                })
+            })
+    })
+})
